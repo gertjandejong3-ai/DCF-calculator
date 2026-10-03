@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>DCF Calculator — Macro Investing Gertjan</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:wght@600;700&display=swap">
+
+<style>
+:root {
+  --bg:       #F5F4F0;
+  --bg2:      #FFFFFF;
+  --bg3:      #ECEAE4;
+  --fg:       #18181A;
+  --fg2:      #4B4B55;
+  --fg3:      #9090A0;
+  --accent:   #1B4332;
+  --accent2:  #2D6A4F;
+  --accentlt: #D8EFE2;
+  --bear:     #B5312B;
+  --base:     #1B4332;
+  --bull:     #1A3A6B;
+  --border:   #DDDBD4;
+  --input-bg: #ECEAE4;
+  --hl:       #F0FAF4;
+  --tag-bg:   #D8EFE2;
+  --tag-fg:   #1B4332;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:       #0F1410;
+    --bg2:      #182018;
+    --bg3:      #1E271E;
+    --fg:       #EEF0EC;
+    --fg2:      #A8B0A4;
+    --fg3:      #5A6358;
+    --accent:   #52B788;
+    --accent2:  #74C69D;
+    --accentlt: #1C2E22;
+    --bear:     #E07070;
+    --base:     #52B788;
+    --bull:     #7BB3FF;
+    --border:   #283028;
+    --input-bg: #1E271E;
+    --hl:       #182418;
+    --tag-bg:   #1C3028;
+    --tag-fg:   #74C69D;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:       #0F1410;
+  --bg2:      #182018;
+  --bg3:      #1E271E;
+  --fg:       #EEF0EC;
+  --fg2:      #A8B0A4;
+  --fg3:      #5A6358;
+  --accent:   #52B788;
+  --accent2:  #74C69D;
+  --accentlt: #1C2E22;
+  --bear:     #E07070;
+  --base:     #52B788;
+  --bull:     #7BB3FF;
+  --border:   #283028;
+  --input-bg: #1E271E;
+  --hl:       #182418;
+  --tag-bg:   #1C3028;
+  --tag-fg:   #74C69D;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.brand-bar {
+  background: var(--accent);
+  color: #fff;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.brand-name { font-family: 'Lora', Georgia, serif; font-size: 16px; font-weight: 700; }
+.brand-sub  { font-size: 11px; opacity: 0.75; margin-top: 1px; }
+.brand-link {
+  font-size: 11px; color: rgba(255,255,255,0.8); text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; padding: 4px 10px; white-space: nowrap;
+}
+.brand-link:hover { background: rgba(255,255,255,0.12); }
+
+.page { max-width: 1080px; margin-inline: auto; padding-inline: 20px; padding-block: 28px 40px; }
+
+.intro { margin-bottom: 28px; }
+.intro h1 {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(20px, 3.5vw, 28px);
+  font-weight: 700; margin: 0 0 8px;
+  color: var(--fg); text-wrap: balance;
+}
+.intro p { font-size: 13px; color: var(--fg2); max-width: 65ch; margin: 0; line-height: 1.7; }
+.intro-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.tag {
+  background: var(--tag-bg); color: var(--tag-fg);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 4px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.card + .card { margin-top: 16px; }
+.card-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--fg3); margin-bottom: 16px;
+}
+.section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--fg3); margin-bottom: 10px;
+}
+
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 12px; font-weight: 600; color: var(--fg2); margin-bottom: 5px; gap: 8px;
+}
+.field label .hint { font-size: 10px; font-weight: 400; color: var(--fg3); flex: 1; text-align: right; }
+
+input[type=text], input[type=number] {
+  width: 100%; background: var(--input-bg); border: 1px solid var(--border);
+  border-radius: 7px; color: var(--fg); font-family: inherit; font-size: 14px;
+  font-weight: 600; padding: 9px 12px; outline: none; transition: border-color 0.2s;
+  font-variant-numeric: tabular-nums;
+}
+input[type=text]:focus, input[type=number]:focus { border-color: var(--accent2); }
+input[type=number] { text-align: right; }
+
+.slider-row { display: flex; align-items: center; gap: 10px; }
+input[type=range] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+.slider-val {
+  font-size: 13px; font-weight: 700; color: var(--accent2);
+  font-variant-numeric: tabular-nums; min-width: 44px; text-align: right;
+}
+
+.divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+/* Scenario growth inputs — 3 columns */
+.growth-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.growth-cell { display: flex; flex-direction: column; gap: 3px; }
+.growth-cell .lbl {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--fg3); text-align: center;
+}
+.growth-cell.bear .lbl { color: var(--bear); }
+.growth-cell.base .lbl { color: var(--base); }
+.growth-cell.bull .lbl { color: var(--bull); }
+.growth-cell input { text-align: center; font-size: 13px; padding: 7px 8px; }
+
+/* Results */
+.results { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+.scenarios { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+@media (max-width: 540px) { .scenarios { grid-template-columns: 1fr; } }
+
+.sc-tile {
+  border-radius: 10px; padding: 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.sc-tile.bear { background: rgba(181,49,43,0.07); border: 1.5px solid rgba(181,49,43,0.25); }
+.sc-tile.base { background: rgba(27,67,50,0.07);  border: 1.5px solid rgba(27,67,50,0.25); }
+.sc-tile.bull { background: rgba(26,58,107,0.07); border: 1.5px solid rgba(26,58,107,0.25); }
+.sc-tile .sc-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.sc-tile.bear .sc-label { color: var(--bear); }
+.sc-tile.base .sc-label { color: var(--base); }
+.sc-tile.bull .sc-label { color: var(--bull); }
+.sc-tile .sc-iv { font-size: clamp(20px,3vw,26px); font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.sc-tile .sc-diff { font-size: 12px; font-weight: 600; margin-top: 2px; }
+.sc-tile .sc-diff.pos { color: var(--base); }
+.sc-tile .sc-diff.neg { color: var(--bear); }
+.sc-tile .sc-detail { font-size: 11px; color: var(--fg3); margin-top: 4px; line-height: 1.5; }
+.sc-tile .sc-buy {
+  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+}
+.sc-tile .sc-buy-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg3); }
+.sc-tile .sc-buy-price { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sc-tile .sc-buy-status { font-size: 11px; font-weight: 600; margin-left: 4px; }
+
+.gauge-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.gauge-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+.gauge-fill.pos { background: var(--base); }
+.gauge-fill.neg { background: var(--bear); }
+
+.verdict {
+  background: var(--hl); border: 1px solid var(--border);
+  border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0;
+  padding: 14px 18px; font-size: 13px; line-height: 1.7; color: var(--fg2);
+}
+.verdict strong { color: var(--fg); }
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th {
+  text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--fg3); padding: 5px 8px 7px;
+  border-bottom: 2px solid var(--border);
+}
+th:not(:first-child) { text-align: right; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--border); color: var(--fg2); }
+td:not(:first-child) { text-align: right; font-weight: 500; color: var(--fg); }
+tr:last-child td { border-bottom: none; }
+.tfoot-row td { background: var(--hl); font-weight: 700; color: var(--fg) !important; font-size: 13px; }
+.phase-row td { background: var(--bg3); font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg3); padding: 4px 8px; }
+
+.explainer { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.explainer summary {
+  cursor: pointer; padding: 12px 16px; font-size: 12px; font-weight: 600;
+  color: var(--fg2); list-style: none; display: flex; justify-content: space-between;
+  align-items: center; background: var(--bg2); user-select: none;
+}
+.explainer summary::after { content: '▸'; font-size: 10px; color: var(--fg3); transition: transform 0.2s; }
+details[open] > summary::after { transform: rotate(90deg); }
+.explainer-body {
+  padding: 14px 16px; background: var(--bg3); font-size: 12px;
+  color: var(--fg2); line-height: 1.8; border-top: 1px solid var(--border);
+}
+.explainer-body b { color: var(--fg); }
+.explainer-body ul { margin: 6px 0 0 16px; padding: 0; }
+.explainer-body li { margin-bottom: 4px; }
+
+.footer {
+  margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--fg3);
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+}
+.footer a { color: var(--accent2); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+.theme-btn {
+  background: none; border: 1px solid var(--border); border-radius: 5px;
+  color: var(--fg3); cursor: pointer; font-size: 11px; padding: 3px 9px; font-family: inherit;
+}
+.theme-btn:hover { background: var(--border); color: var(--fg); }
+
+.hint-line { font-size: 11px; color: var(--fg3); margin-top: 5px; line-height: 1.5; }
+.warn { color: var(--bear); }
+</style>
+</head>
+<body>
+
+<div class="brand-bar">
+  <div>
+    <div class="brand-name">Macro Investing — Gertjan</div>
+    <div class="brand-sub">Long-term investing for the independent thinker</div>
+  </div>
+  <a class="brand-link" href="https://macrogertjan.substack.com" target="_blank" rel="noopener">📬 Read the newsletter</a>
+</div>
+
+<div class="page">
+
+  <div class="intro">
+    <h1>DCF Calculator — Find the Intrinsic Value of Any Stock</h1>
+    <p>Enter the current EPS, your growth expectations per scenario, and the required return. The calculator projects earnings over 5 years and discounts the result back to today.</p>
+    <div class="intro-tags">
+      <span class="tag">Free tool</span>
+      <span class="tag">5-year DCF</span>
+      <span class="tag">3 scenarios</span>
+      <span class="tag">Margin of safety</span>
+      <button class="theme-btn" onclick="toggleTheme()" style="margin-left:auto">◐ Theme</button>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- INPUT PANEL -->
+    <div>
+
+      <!-- Step 1: Stock -->
+      <div class="card">
+        <div class="card-title">Step 1 — Stock & Price</div>
+        <div class="field">
+          <label>Name / Ticker <span class="hint">e.g. AAPL, V</span></label>
+          <input type="text" id="tickerName" value="AAPL" oninput="updateAll()">
+        </div>
+        <div class="field">
+          <label>Current stock price ($) <span class="hint">in USD</span></label>
+          <input type="number" id="currentPrice" value="225" min="1" step="1" oninput="updateAll()">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Current EPS <span class="hint">last 12 months</span></label>
+          <input type="number" id="epsNow" value="6.50" step="0.1" min="0.01" oninput="updateAll()">
+        </div>
+        <div class="hint-line" id="impliedPeHint" style="margin-top:8px"></div>
+      </div>
+
+      <!-- Step 2: Growth scenarios -->
+      <div class="card">
+        <div class="card-title">Step 2 — EPS Growth per Scenario</div>
+
+        <div class="section-label">Phase 1 growth — years 1–5 (%/yr)</div>
+        <div class="growth-grid">
+          <div class="growth-cell bear">
+            <span class="lbl">🐻 Bear</span>
+            <input type="number" id="g1Bear" value="5" step="0.5" min="0" oninput="updateAll()">
+          </div>
+          <div class="growth-cell base">
+            <span class="lbl">⚖ Base</span>
+            <input type="number" id="g1Base" value="10" step="0.5" min="0" oninput="updateAll()">
+          </div>
+          <div class="growth-cell bull">
+            <span class="lbl">🐂 Bull</span>
+            <input type="number" id="g1Bull" value="15" step="0.5" min="0" oninput="updateAll()">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-label">Phase 2 growth — years 6–10 (%/yr)</div>
+        <div class="growth-grid">
+          <div class="growth-cell bear">
+            <span class="lbl">🐻 Bear</span>
+            <input type="number" id="g2Bear" value="3" step="0.5" min="0" oninput="updateAll()">
+          </div>
+          <div class="growth-cell base">
+            <span class="lbl">⚖ Base</span>
+            <input type="number" id="g2Base" value="8" step="0.5" min="0" oninput="updateAll()">
+          </div>
+          <div class="growth-cell bull">
+            <span class="lbl">🐂 Bull</span>
+            <input type="number" id="g2Bull" value="12" step="0.5" min="0" oninput="updateAll()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Parameters -->
+      <div class="card">
+        <div class="card-title">Step 3 — Valuation Parameters</div>
+
+        <div class="field">
+          <label>Target P/E at year 10 <span class="hint">normalized multiple</span></label>
+          <div class="slider-row">
+            <input type="range" id="pe" min="10" max="55" step="1" value="25" oninput="updateAll()">
+            <span class="slider-val" id="peLbl">25×</span>
+          </div>
+          <div class="hint-line" id="peHint"></div>
+        </div>
+
+        <div class="field">
+          <label>Required annual return <span class="hint">your minimum hurdle rate</span></label>
+          <div class="slider-row">
+            <input type="range" id="reqReturn" min="5" max="20" step="0.5" value="10" oninput="updateAll()">
+            <span class="slider-val" id="reqReturnLbl">10%</span>
+          </div>
+          <div class="hint-line">The return you want as an investor. Higher = stricter = lower IV. Typically 10–15%.</div>
+        </div>
+
+        <div class="field" style="margin-bottom:0">
+          <label>Margin of Safety <span class="hint">discount before buying</span></label>
+          <div class="slider-row">
+            <input type="range" id="mos" min="0" max="50" step="5" value="25" oninput="updateAll()">
+            <span class="slider-val" id="mosLbl">25%</span>
+          </div>
+          <div class="hint-line">Graham's principle: only buy when price is well below IV, as a buffer for errors.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RESULTS PANEL -->
+    <div class="results">
+
+      <div class="card">
+        <div class="section-label" id="tickerTitle">AAPL — Intrinsic Value (3 Scenarios)</div>
+        <div class="scenarios" id="scenariosDiv"></div>
+      </div>
+
+      <div class="verdict" id="verdictDiv"></div>
+
+      <div class="card">
+        <div class="section-label">DCF Worksheet — Base Scenario</div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>EPS ($)</th>
+                <th>Growth %</th>
+                <th>Discount factor</th>
+                <th>PV of EPS ($)</th>
+              </tr>
+            </thead>
+            <tbody id="dcfTbody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px" id="dcfFootDiv"></div>
+      </div>
+
+      <details class="explainer">
+        <summary>📖 How does this 2-phase DCF work?</summary>
+        <div class="explainer-body">
+          <b>Phase 1 (years 1–5):</b> EPS grows at your phase-1 rate via compounding. Each year's EPS is discounted back to today using your required return.<br><br>
+          <b>Phase 2 (years 6–10):</b> Growth slows to your phase-2 rate — more conservative, reflecting maturity. Still discounted back.<br><br>
+          <b>Terminal value:</b> At year 10, the stock is valued at EPS × P/E. That price is discounted back to today.<br><br>
+          <b>Intrinsic value</b> = sum of all discounted EPS (years 1–10) + discounted terminal value.<br><br>
+          <b>Why two phases?</b> Most companies grow fast early, then slow down. Using one rate overestimates long-run earnings for growth stocks.
+        </div>
+      </details>
+
+      <details class="explainer">
+        <summary>🎚 What inputs matter most?</summary>
+        <div class="explainer-body">
+          <ul>
+            <li><b>Phase 1 growth rate:</b> has the biggest impact. Be honest — analyst consensus is a good starting point.</li>
+            <li><b>Phase 2 growth rate:</b> keep it below phase 1. For mature companies, 3–6% is realistic.</li>
+            <li><b>Target P/E:</b> what multiple will the market pay in year 10? Use the current P/E as a reference — don't assume a big re-rating.</li>
+            <li><b>Required return:</b> your personal hurdle rate. 10% is standard for equities. Use 12–15% for riskier stocks.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="explainer">
+        <summary>⚠ Limitations of this model</summary>
+        <div class="explainer-body">
+          A DCF is only as good as its assumptions. This model:
+          <ul>
+            <li>Uses EPS rather than free cash flow — the gap matters for CapEx-heavy businesses</li>
+            <li>Assumes constant growth within each phase — no cyclical adjustments</li>
+            <li>Does not account for net debt, buybacks, or dilution</li>
+            <li>Terminal value still dominates (typically 50–70% of IV) — small P/E changes have large effects</li>
+          </ul>
+          <b>Use as a reference framework, not as investment advice.</b>
+        </div>
+      </details>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>© 2026 <a href="https://macrogertjan.substack.com" target="_blank" rel="noopener">Macro Investing — Gertjan</a> · Not financial advice · For educational purposes only</span>
+    <span>DCF Calculator v2.0</span>
+  </div>
+</div>
+
+<script>
+function v(id)   { return parseFloat(document.getElementById(id).value) || 0; }
+function s(id)   { return document.getElementById(id).value.trim(); }
+function fmt(n)  { return '$' + Math.round(n).toLocaleString('en-US'); }
+function fmtD(n) { return '$' + n.toFixed(2); }
+function fmtPct(n) { return (n >= 0 ? '+' : '') + (n * 100).toFixed(1) + '%'; }
+
+function calcScenario(epsNow, g1, g2, reqReturn, pe) {
+  const r = reqReturn;
+  let eps = epsNow;
+  let pvSum = 0;
+  const rows = [];
+
+  // Phase 1: years 1–5
+  for (let yr = 1; yr <= 5; yr++) {
+    eps = eps * (1 + g1);
+    const df = Math.pow(1 + r, yr);
+    const pvEps = eps / df;
+    pvSum += pvEps;
+    rows.push({ yr, eps, growth: g1, df, pvEps, phase: 1 });
+  }
+
+  // Phase 2: years 6–10
+  for (let yr = 6; yr <= 10; yr++) {
+    eps = eps * (1 + g2);
+    const df = Math.pow(1 + r, yr);
+    const pvEps = eps / df;
+    pvSum += pvEps;
+    rows.push({ yr, eps, growth: g2, df, pvEps, phase: 2 });
+  }
+
+  const terminalEPS   = eps;                        // EPS at year 10
+  const terminalPrice = terminalEPS * pe;            // stock price at year 10
+  const pvTerminal    = terminalPrice / Math.pow(1 + r, 10);
+  const iv            = pvSum + pvTerminal;
+  const tvShare       = pvTerminal / iv;
+
+  return { iv, pvSum, pvTerminal, terminalPrice, terminalEPS, rows, tvShare };
+}
+
+function updateAll() {
+  const ticker = s('tickerName') || 'Stock';
+  const price  = v('currentPrice') || 1;
+  const epsNow = v('epsNow');
+  const pe     = v('pe');
+  const rr     = v('reqReturn') / 100;
+  const mos    = v('mos') / 100;
+
+  // Slider labels
+  document.getElementById('peLbl').textContent        = pe.toFixed(0) + '×';
+  document.getElementById('reqReturnLbl').textContent = v('reqReturn').toFixed(1) + '%';
+  document.getElementById('mosLbl').textContent       = v('mos').toFixed(0) + '%';
+  document.getElementById('tickerTitle').textContent  = ticker + ' — Intrinsic Value (3 Scenarios)';
+
+  // Implied P/E hint
+  const impliedPE = epsNow > 0 ? price / epsNow : null;
+  const impliedPeEl = document.getElementById('impliedPeHint');
+  if (impliedPE !== null) {
+    impliedPeEl.textContent = `Current market P/E: ${impliedPE.toFixed(1)}× (price ÷ EPS)`;
+    impliedPeEl.className = 'hint-line';
+  }
+
+  // P/E hint vs current
+  const peHintEl = document.getElementById('peHint');
+  if (impliedPE !== null) {
+    const diff = pe - impliedPE;
+    if (diff > impliedPE * 0.3) {
+      peHintEl.className = 'hint-line warn';
+      peHintEl.textContent = `⚠ Exit P/E (${pe}×) is much higher than the current market P/E (${impliedPE.toFixed(1)}×) — assumes a significant re-rating upward.`;
+    } else if (diff < -3) {
+      peHintEl.className = 'hint-line warn';
+      peHintEl.textContent = `Exit P/E (${pe}×) is below the current market P/E (${impliedPE.toFixed(1)}×) — assumes the stock will be cheaper in year 10 (de-rating).`;
+    } else {
+      peHintEl.className = 'hint-line';
+      peHintEl.textContent = `Exit P/E (${pe}×) is close to the current market P/E (${impliedPE.toFixed(1)}×) — a reasonable assumption.`;
+    }
+  }
+
+  // Calculate 3 scenarios
+  const bear = calcScenario(epsNow, v('g1Bear')/100, v('g2Bear')/100, rr, pe);
+  const base = calcScenario(epsNow, v('g1Base')/100, v('g2Base')/100, rr, pe);
+  const bull = calcScenario(epsNow, v('g1Bull')/100, v('g2Bull')/100, rr, pe);
+
+  // Scenario tiles
+  const tiles = [
+    { label:'🐻 Bear', res: bear, cls:'bear', g1: v('g1Bear'), g2: v('g2Bear') },
+    { label:'⚖️ Base', res: base, cls:'base', g1: v('g1Base'), g2: v('g2Base') },
+    { label:'🐂 Bull', res: bull, cls:'bull', g1: v('g1Bull'), g2: v('g2Bull') },
+  ];
+
+  document.getElementById('scenariosDiv').innerHTML = tiles.map(t => {
+    const diff    = (t.res.iv - price) / price;
+    const isUp    = diff >= 0;
+    const gauge   = Math.min(Math.abs(diff) * 150, 100);
+    const buyBelow = t.res.iv * (1 - mos);
+    const inZone  = price <= buyBelow;
+    return `<div class="sc-tile ${t.cls}">
+      <span class="sc-label">${t.label}</span>
+      <span class="sc-iv" style="color:var(--${t.cls})">${fmt(t.res.iv)}</span>
+      <span class="sc-diff ${isUp?'pos':'neg'}">${isUp?'▲':'▼'} ${Math.abs(diff*100).toFixed(0)}% ${isUp?'upside':'downside'}</span>
+      <div class="gauge-bar"><div class="gauge-fill ${isUp?'pos':'neg'}" style="width:${gauge}%"></div></div>
+      <span class="sc-detail">Yr10 EPS: ${fmtD(t.res.terminalEPS)} · P/E: ${pe}×</span>
+      <span class="sc-detail">Growth: ${t.g1}% → ${t.g2}%</span>
+      <div class="sc-buy">
+        <span class="sc-buy-lbl">Buy below (${v('mos').toFixed(0)}% MoS)</span><br>
+        <span class="sc-buy-price" style="color:${inZone?'var(--base)':'var(--bear)'}">${fmt(buyBelow)}</span>
+        <span class="sc-buy-status" style="color:${inZone?'var(--base)':'var(--bear)'}">${inZone?'✓ In buy zone':'✗ Not yet'}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Verdict
+  const baseIV   = base.iv;
+  const prem     = ((price / baseIV) - 1) * 100;
+  const baseBuy  = baseIV * (1 - mos);
+  const inBuyZone = price <= baseBuy;
+
+  let vText = '';
+  if (prem > 20) {
+    vText = `<strong>${ticker} trades ${prem.toFixed(0)}% above the base intrinsic value (${fmt(baseIV)}).</strong> The stock appears premium-priced on current growth assumptions. The bull scenario (${fmt(bull.iv)}) can justify the current price if growth targets are met.`;
+  } else if (prem < -15) {
+    vText = `<strong>${ticker} trades ${Math.abs(prem).toFixed(0)}% below the base intrinsic value (${fmt(baseIV)}).</strong> The stock may be undervalued on a base-case basis. Always verify whether the growth projections are realistic before acting.`;
+  } else {
+    vText = `<strong>${ticker} trades close to the base intrinsic value (${fmt(baseIV)}).</strong> Difference vs. current price: ${prem>=0?'+':''}${prem.toFixed(0)}%. Sits between the bear (${fmt(bear.iv)}) and bull (${fmt(bull.iv)}) scenarios.`;
+  }
+
+  if (v('mos') > 0) {
+    if (inBuyZone) {
+      vText += `<br><br><span style="color:var(--base)">✓ <strong>In buy zone (${v('mos').toFixed(0)}% margin of safety):</strong> Current price ${fmt(price)} is below the MoS threshold of ${fmt(baseBuy)}.`;
+    } else {
+      const gap = ((baseBuy / price) - 1) * 100;
+      vText += `<br><br><span style="color:var(--bear)">✗ <strong>Not in buy zone (${v('mos').toFixed(0)}% margin of safety):</strong> Buy below ${fmt(baseBuy)} on the base scenario. Current price needs to drop ${Math.abs(gap).toFixed(0)}% to reach the MoS threshold.</span>`;
+    }
+  }
+
+  // TV warning
+  if (base.tvShare > 0.70) {
+    vText += `<br><br><span style="color:var(--bear)">⚠ <strong>Model note:</strong> ${(base.tvShare*100).toFixed(0)}% of the intrinsic value comes from the terminal value (year 10 stock price). The exit P/E assumption has a large effect on the result.</span>`;
+  }
+
+  document.getElementById('verdictDiv').innerHTML = vText;
+
+  // DCF worksheet — base scenario
+  const yr0 = new Date().getFullYear();
+  let tbodyHtml = '';
+  let lastPhase = 0;
+  base.rows.forEach(r => {
+    if (r.phase !== lastPhase) {
+      tbodyHtml += `<tr class="phase-row"><td colspan="5">Phase ${r.phase} — ${r.phase===1?`Years 1–5 (${v('g1Base')}%/yr)`:`Years 6–10 (${v('g2Base')}%/yr)`}</td></tr>`;
+      lastPhase = r.phase;
+    }
+    tbodyHtml += `<tr>
+      <td>${yr0 + r.yr}</td>
+      <td>${fmtD(r.eps)}</td>
+      <td style="color:var(--base)">${(r.growth*100).toFixed(1)}%</td>
+      <td>${r.df.toFixed(3)}×</td>
+      <td>${fmtD(r.pvEps)}</td>
+    </tr>`;
+  });
+  document.getElementById('dcfTbody').innerHTML = tbodyHtml;
+
+  document.getElementById('dcfFootDiv').innerHTML = `
+    <table><tbody>
+      <tr><td style="color:var(--fg2)">Σ PV of EPS (years 1–10)</td><td>${fmt(base.pvSum)}</td></tr>
+      <tr><td style="color:var(--fg2)">Stock price at year 10 (EPS ${fmtD(base.terminalEPS)} × P/E ${pe}×)</td><td>${fmt(base.terminalPrice)}</td></tr>
+      <tr><td style="color:var(--fg2)">PV of terminal price</td><td>${fmt(base.pvTerminal)}</td></tr>
+      <tr class="tfoot-row"><td>Intrinsic value (base)</td><td style="color:var(--base)">${fmt(base.iv)}</td></tr>
+      <tr><td style="color:var(--fg2)">Current market price</td><td>${fmt(price)}</td></tr>
+    </tbody></table>`;
+}
+
+function toggleTheme() {
+  const r = document.documentElement;
+  r.setAttribute('data-theme', r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+updateAll();
+</script>
+</body>
+</html>
